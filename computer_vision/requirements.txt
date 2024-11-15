@@ -1,0 +1,10 @@
+opencv-python
+numpy
+ultralytics
+deep_sort_realtime
+azure-eventhub
+azure-servicebus
+python-dotenv
+azure-identity
+azure-appconfiguration
+azure-keyvault-secrets
