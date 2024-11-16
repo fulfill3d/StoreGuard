@@ -9,6 +9,11 @@ from azure_service_bus_client import AzureServiceBusClient
 from configuration import AppConfigClient
 from video_processing_service import VideoProcessingService
 
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 def main_case1():
     """Case 1 is when single source of video stream is processed.
     There are no multi-cameras to detect similarities between
