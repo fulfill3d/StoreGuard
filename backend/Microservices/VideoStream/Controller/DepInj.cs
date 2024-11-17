@@ -1,23 +1,19 @@
-using Azure.Messaging.EventHubs.Producer;
-using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+using StoreGuard.Common.Services;
+using StoreGuard.Integrations.EventHubClient;
+using StoreGuard.Integrations.EventHubClient.Options;
+using StoreGuard.Microservices.VideoStream.Service;
+using StoreGuard.Microservices.VideoStream.Service.Interfaces;
 
 namespace StoreGuard.Microservices.VideoStream
 {
     public static class DepInj
     {
-        /// <summary>
-        /// Adds Azure App Configuration and Event Hub dependencies to the IServiceCollection.
-        /// </summary>
-        /// <param name="services">The IServiceCollection to add the services to.</param>
-        /// <param name="configuration">The configuration object to retrieve settings from.</param>
-        /// <returns>The IServiceCollection with the added services.</returns>
-        public static IServiceCollection RegisterServices(this IServiceCollection services)
+        public static IServiceCollection RegisterServices(
+            this IServiceCollection services, 
+            Action<EventHubClientOptions> configureEventHub)
         {
-
-            // services.AddSingleton(_ => new EventHubProducerClient(eventHubConnectionString, eventHubName));
-
+            services.RegisterEventHubClient(configureEventHub);
+            services.AddTransient<IVideoStreamService, VideoStreamService>();
             return services;
         }
     }

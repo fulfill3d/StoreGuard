@@ -2,13 +2,29 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy the .csproj file and restore dependencies
-COPY StoreGuard.Microservices.VideoStream.csproj ./
-RUN dotnet restore StoreGuard.Microservices.VideoStream.csproj
+# Copy the solution file
+COPY StoreGuard.sln .
 
-# Copy the entire project and build it
-COPY . .
-RUN dotnet publish StoreGuard.Microservices.VideoStream.csproj -c Release -o /app/publish
+# Copy project files for dependency restoration
+COPY Common/Services/StoreGuard.Common.Services.csproj Common/Services/
+COPY Integrations/EventHubClient/StoreGuard.Integrations.EventHubClient.csproj Integrations/EventHubClient/
+COPY Microservices/VideoStream/Data/StoreGuard.Microservices.VideoStream.Data.csproj Microservices/VideoStream/Data/
+COPY Microservices/VideoStream/Service/StoreGuard.Microservices.VideoStream.Service.csproj Microservices/VideoStream/Service/
+COPY Microservices/VideoStream/Controller/StoreGuard.Microservices.VideoStream.csproj Microservices/VideoStream/Controller/
+
+# Restore dependencies for the VideoStream microservice
+RUN dotnet restore Microservices/VideoStream/Controller/StoreGuard.Microservices.VideoStream.csproj
+
+# Copy the rest of the source code
+COPY Common/Services/* Common/Services/
+COPY Integrations/EventHubClient/* Integrations/EventHubClient/
+COPY Microservices/VideoStream/Data/* Microservices/VideoStream/Data/
+COPY Microservices/VideoStream/Service/* Microservices/VideoStream/Service/
+COPY Microservices/VideoStream/Controller/* Microservices/VideoStream/Controller/
+
+# Build and publish the project
+WORKDIR /src/Microservices/VideoStream/Controller
+RUN dotnet publish -c Release -o /app/publish
 
 # Stage 2: Run the application
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime

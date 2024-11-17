@@ -26,6 +26,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreGuard.Microservices.Vi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreGuard.Integrations.EventHubClient", "Integrations\EventHubClient\StoreGuard.Integrations.EventHubClient.csproj", "{AD9B1246-DF72-43A3-9F8C-FB8EE914B7F5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{7C120E72-0CC4-41F3-B6D8-B44F772E1172}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreGuard.Common.Services", "Common\Services\StoreGuard.Common.Services.csproj", "{03867910-AE76-443D-A4EE-4201086D9590}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +46,7 @@ Global
 		{28A2F06D-1B1E-4CDD-8D75-68CC84E80E52} = {28CBDC69-DD0E-44A2-955E-4FB20FB0514B}
 		{EFA78670-95E9-4085-9AFE-420EE4F04848} = {28CBDC69-DD0E-44A2-955E-4FB20FB0514B}
 		{AD9B1246-DF72-43A3-9F8C-FB8EE914B7F5} = {0C3228E0-7E67-4EDF-81A8-DAFC5A831299}
+		{03867910-AE76-443D-A4EE-4201086D9590} = {7C120E72-0CC4-41F3-B6D8-B44F772E1172}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{811A22D2-15A0-401A-9E92-AF10416A44A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -76,5 +81,9 @@ Global
 		{AD9B1246-DF72-43A3-9F8C-FB8EE914B7F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD9B1246-DF72-43A3-9F8C-FB8EE914B7F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD9B1246-DF72-43A3-9F8C-FB8EE914B7F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03867910-AE76-443D-A4EE-4201086D9590}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03867910-AE76-443D-A4EE-4201086D9590}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03867910-AE76-443D-A4EE-4201086D9590}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03867910-AE76-443D-A4EE-4201086D9590}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

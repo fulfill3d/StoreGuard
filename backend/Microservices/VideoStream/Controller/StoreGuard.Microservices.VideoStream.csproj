@@ -4,13 +4,22 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Azure.Identity" Version="1.13.1" />
         <PackageReference Include="Azure.Messaging.EventHubs" Version="5.11.5" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.5"/>
         <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Common\Services\StoreGuard.Common.Services.csproj" />
+      <ProjectReference Include="..\..\..\Integrations\EventHubClient\StoreGuard.Integrations.EventHubClient.csproj" />
+      <ProjectReference Include="..\Data\StoreGuard.Microservices.VideoStream.Data.csproj" />
+      <ProjectReference Include="..\Service\StoreGuard.Microservices.VideoStream.Service.csproj" />
     </ItemGroup>
 
 </Project>

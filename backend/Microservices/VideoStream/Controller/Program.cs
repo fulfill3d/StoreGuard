@@ -1,33 +1,28 @@
-using Azure.Messaging.EventHubs.Producer;
+using Azure.Identity;
 using StoreGuard.Microservices.VideoStream;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Step 1: Connect to Azure App Configuration
-var appConfigConnectionString = builder.Configuration["AppConfig:ConnectionString"] ?? string.Empty;
+// Connect to Azure App Configuration
+var token = new DefaultAzureCredential();
+var appConfigUrl = builder.Configuration["AppConfigUrl"] ?? string.Empty;
 
-builder.Configuration.AddAzureAppConfiguration(options =>
+builder.Configuration.AddAzureAppConfiguration(config =>
 {
-    options.Connect(appConfigConnectionString)
-        .Select("*")  // Load all configuration settings
-        .ConfigureRefresh(refresh =>
-        {
-            // Optional: Configure auto-refresh for specific keys
-            refresh.Register("EventHub:ConnectionString", refreshAll: true);
-        });
+    config.Connect(new Uri(appConfigUrl), token);
+    config.ConfigureKeyVault(kv => kv.SetCredential(token));
 });
 
-// Step 2: Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.RegisterServices();
 
-// Step 3: Configure Azure Event Hubs using settings from App Configuration
-var eventHubConnectionString = builder.Configuration["EventHub:ConnectionString"];
-var eventHubName = builder.Configuration["EventHub:Name"];
-
-builder.Services.AddSingleton(_ => new EventHubProducerClient(eventHubConnectionString, eventHubName));
+// Add services to the container
+builder.Services.RegisterServices(configureEventHub =>
+{
+    configureEventHub.ConnectionString = builder.Configuration["EventHubConnectionString"] ?? string.Empty;
+    configureEventHub.EventHubName = builder.Configuration["EventHubName"] ?? string.Empty;
+});
 
 var app = builder.Build();
 
