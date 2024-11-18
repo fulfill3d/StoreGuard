@@ -1,5 +1,4 @@
 using System.Text;
-using System.Threading.Tasks;
 using Azure.Messaging.EventHubs;
 using Azure.Messaging.EventHubs.Producer;
 using StoreGuard.Integrations.EventHubClient.Interfaces;
@@ -8,21 +7,40 @@ namespace StoreGuard.Integrations.EventHubClient
 {
     public class EventHubClient(EventHubProducerClient producerClient) : IEventHubClient
     {
-        public async Task SendMessageAsync(string message)
+        // Method to send a single message with metadata
+        public async Task SendMessageAsync(string message, string? contentType = null, string? messageId = null, string? partitionKey = null)
         {
-            using var eventBatch = await producerClient.CreateBatchAsync();
-            eventBatch.TryAdd(new EventData(Encoding.UTF8.GetBytes(message)));
+            var eventData = new EventData(Encoding.UTF8.GetBytes(message))
+            {
+                ContentType = contentType,
+                MessageId = messageId
+            };
 
-            await producerClient.SendAsync(eventBatch);
+            if (partitionKey != null)
+            {
+                // Send with partition key
+                await producerClient.SendAsync(new[] { eventData }, new SendEventOptions { PartitionKey = partitionKey });
+            }
+            else
+            {
+                await producerClient.SendAsync(new[] { eventData });
+            }
         }
 
-        public async Task SendBatchMessagesAsync(IEnumerable<string> messages)
+        // Method to send a batch of messages with metadata
+        public async Task SendBatchMessagesAsync(IEnumerable<string> messages, string? contentType = null, string? partitionKey = null)
         {
-            using EventDataBatch eventBatch = await producerClient.CreateBatchAsync();
+            var eventBatch = await producerClient.CreateBatchAsync(new CreateBatchOptions { PartitionKey = partitionKey });
 
             foreach (var message in messages)
             {
-                if (!eventBatch.TryAdd(new EventData(Encoding.UTF8.GetBytes(message))))
+                var eventData = new EventData(Encoding.UTF8.GetBytes(message))
+                {
+                    ContentType = contentType,
+                    MessageId = Guid.NewGuid().ToString()
+                };
+
+                if (!eventBatch.TryAdd(eventData))
                 {
                     throw new Exception("Event data too large for the batch.");
                 }
@@ -31,18 +49,23 @@ namespace StoreGuard.Integrations.EventHubClient
             await producerClient.SendAsync(eventBatch);
         }
 
-        public async Task SendByteDataAsync(byte[] data)
+        // Method to send byte data with metadata
+        public async Task SendByteDataAsync(byte[] data, string? contentType = null, string? messageId = null, string? partitionKey = null)
         {
-            using var eventBatch = await producerClient.CreateBatchAsync();
+            var eventData = new EventData(data)
+            {
+                ContentType = contentType,
+                MessageId = messageId
+            };
 
-            // Create an EventData object from the byte array
-            var eventData = new EventData(data);
-
-            if (!eventBatch.TryAdd(eventData))
-                throw new Exception("Video data too large for the batch.");
-
-            // Send the batch to Event Hub
-            await producerClient.SendAsync(eventBatch);
+            if (partitionKey != null)
+            {
+                await producerClient.SendAsync(new[] { eventData }, new SendEventOptions { PartitionKey = partitionKey });
+            }
+            else
+            {
+                await producerClient.SendAsync(new[] { eventData });
+            }
         }
     }
 }
