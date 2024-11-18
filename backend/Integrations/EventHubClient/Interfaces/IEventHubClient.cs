@@ -4,5 +4,6 @@ namespace StoreGuard.Integrations.EventHubClient.Interfaces
     {
         Task SendMessageAsync(string message);
         Task SendBatchMessagesAsync(IEnumerable<string> messages);
+        Task SendByteDataAsync(byte[] data);
     }
 }

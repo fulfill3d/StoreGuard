@@ -1,7 +1,0 @@
-@Controller_HostAddress = http://localhost:5026
-
-### Upload Video Stream
-POST {{Controller_HostAddress}}/api/videostream/upload
-Content-Type: application/json
-
-< @video-data.json

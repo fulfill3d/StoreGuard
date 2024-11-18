@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>WebRTC Video Streaming</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
+</head>
+<body>
+<h2>WebRTC Video Streaming</h2>
+<video id="localVideo" autoplay playsinline></video>
+<script>
+    const videoElement = document.getElementById("localVideo");
+    const peerConnection = new RTCPeerConnection();
+    const hubConnection = new signalR.HubConnectionBuilder()
+        .withUrl("http://localhost:5026/videoHub", { withCredentials: true })
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+    // Function to check for supported MIME types
+    function getSupportedMimeType() {
+        const mimeTypes = [
+            'video/webm; codecs="vp8"',
+            'video/webm; codecs="vp9"',
+            'video/webm; codecs="h264"',
+            'video/mp4'
+        ];
+
+        for (const mimeType of mimeTypes) {
+            if (MediaRecorder.isTypeSupported(mimeType)) {
+                console.log(`Using MIME type: ${mimeType}`);
+                return mimeType;
+            }
+        }
+
+        console.error("No supported MIME type found");
+        return null;
+    }
+
+    async function startVideo() {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        videoElement.srcObject = stream;
+
+        // Get a supported MIME type
+        const selectedMimeType = getSupportedMimeType();
+        if (!selectedMimeType) {
+            console.error("Failed to start MediaRecorder: No supported MIME type");
+            return;
+        }
+
+        // Create MediaRecorder with the selected MIME type
+        const mediaRecorder = new MediaRecorder(stream, { mimeType: selectedMimeType });
+
+        // Function to send data in smaller chunks
+        async function sendChunkedData(data, chunkSize = 64 * 1024) { // 64KB chunks
+            let offset = 0;
+
+            while (offset < data.length) {
+                const chunk = data.slice(offset, offset + chunkSize);
+                const base64Chunk = btoa(String.fromCharCode(...chunk));
+
+                try {
+                    console.log(`Sending chunk of size: ${chunk.length} bytes`);
+                    await hubConnection.invoke("SendVideoData", base64Chunk);
+                } catch (err) {
+                    console.error("Error sending video chunk:", err.message);
+                    return;
+                }
+
+                offset += chunkSize;
+            }
+        }
+
+        mediaRecorder.ondataavailable = async (event) => {
+            console.log("ondataavailable event fired");
+            if (event.data && event.data.size > 0) {
+                const arrayBuffer = await event.data.arrayBuffer();
+                console.log(`Captured video chunk of size: ${arrayBuffer.byteLength}`);
+
+                // Convert to Uint8Array
+                const videoChunk = new Uint8Array(arrayBuffer);
+
+                // Send the data in smaller chunks
+                await sendChunkedData(videoChunk);
+            }
+        };
+
+
+        mediaRecorder.start(200);
+
+        const offer = await peerConnection.createOffer();
+        await peerConnection.setLocalDescription(offer);
+        await sendOffer(offer.sdp);
+    }
+
+    async function connectSignalR() {
+        try {
+            await hubConnection.start();
+            console.log("SignalR connected");
+        } catch (err) {
+            console.error("Error connecting to SignalR:", err);
+            setTimeout(connectSignalR, 3000); // Retry connection after 3 seconds
+        }
+    }
+
+    async function sendOffer(offer) {
+        try {
+            console.log("Sending offer...");
+            await hubConnection.invoke("SendOffer", offer);
+        } catch (err) {
+            console.error("Error sending offer:", err);
+        }
+    }
+
+    async function handleWebRTC() {
+        peerConnection.ontrack = (event) => {
+            videoElement.srcObject = event.streams[0];
+        };
+
+        hubConnection.on("ReceiveOffer", async (offer) => {
+            console.log("Received offer from server");
+            const remoteDesc = new RTCSessionDescription({ type: "offer", sdp: offer });
+            await peerConnection.setRemoteDescription(remoteDesc);
+
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            await hubConnection.invoke("SendAnswer", answer.sdp);
+        });
+
+        hubConnection.on("ReceiveAnswer", async (answer) => {
+            console.log("Received answer from server");
+            const remoteDesc = new RTCSessionDescription({ type: "answer", sdp: answer });
+            await peerConnection.setRemoteDescription(remoteDesc);
+        });
+
+        peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                hubConnection.invoke("SendIceCandidate", event.candidate.candidate)
+                    .catch(err => console.error("Error sending ICE candidate:", err));
+            }
+        };
+
+        hubConnection.on("ReceiveCandidate", async (candidate) => {
+            console.log("Received ICE candidate from server");
+            await peerConnection.addIceCandidate(new RTCIceCandidate({ candidate }));
+        });
+    }
+
+    connectSignalR();
+    handleWebRTC();
+    startVideo();
+</script>
+</body>
+</html>

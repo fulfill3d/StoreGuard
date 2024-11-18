@@ -30,5 +30,19 @@ namespace StoreGuard.Integrations.EventHubClient
 
             await producerClient.SendAsync(eventBatch);
         }
+
+        public async Task SendByteDataAsync(byte[] data)
+        {
+            using var eventBatch = await producerClient.CreateBatchAsync();
+
+            // Create an EventData object from the byte array
+            var eventData = new EventData(data);
+
+            if (!eventBatch.TryAdd(eventData))
+                throw new Exception("Video data too large for the batch.");
+
+            // Send the batch to Event Hub
+            await producerClient.SendAsync(eventBatch);
+        }
     }
 }
