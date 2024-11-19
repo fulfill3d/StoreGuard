@@ -8,13 +8,14 @@ namespace StoreGuard.Microservices.VideoStream.Service
 {
     public class VideoStreamService(IEventHubClient eventHubClient): IVideoStreamService
     {
-        public async Task SendVideoDataAsync(byte[] data, string sourceId, string cameraId)
+        public async Task SendVideoDataAsync(string base64Data, string sourceId, string cameraId, string timestamp)
         {
             var payload = new Chunk
             {
                 SourceId = sourceId,
                 CameraId = cameraId,
-                FrameData = Convert.ToBase64String(data)
+                TimeStamp = timestamp,
+                FrameData = base64Data
             };
             
             var payloadJson = JsonSerializer.Serialize(payload);

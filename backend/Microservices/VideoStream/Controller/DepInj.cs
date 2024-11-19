@@ -15,7 +15,7 @@ namespace StoreGuard.Microservices.VideoStream
             {
                 options.AddPolicy("AllowSpecificOrigin", builder =>
                 {
-                    builder.WithOrigins("http://localhost:63342", "http://localhost:5026")
+                    builder.WithOrigins("http://localhost:63343", "http://localhost:5026")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();

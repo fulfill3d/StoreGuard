@@ -4,6 +4,7 @@ namespace StoreGuard.Microservices.VideoStream.Data.Models
     {
         public string SourceId { get; set; }
         public string CameraId { get; set; }
+        public string TimeStamp { get; set; }
         public string FrameData { get; set; }
     }
 }

@@ -2,6 +2,6 @@ namespace StoreGuard.Microservices.VideoStream.Service.Interfaces
 {
     public interface IVideoStreamService
     {
-        Task SendVideoDataAsync(byte[] data, string sourceId, string cameraId);
+        Task SendVideoDataAsync(string base64Data, string sourceId, string cameraId, string timestamp);
     }
 }

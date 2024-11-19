@@ -59,7 +59,7 @@ namespace StoreGuard.Microservices.VideoStream
             }
         }
 
-        public async Task SendVideoData(string base64Data, string sourceId, string cameraId)
+        public async Task SendVideoData(string base64Data, string sourceId, string cameraId, string timestamp)
         {
             try
             {
@@ -69,28 +69,28 @@ namespace StoreGuard.Microservices.VideoStream
                     return;
                 }
 
-                // Step 1: Decode Base64 to byte array
-                byte[] videoData;
-                try
-                {
-                    videoData = Convert.FromBase64String(base64Data);
-                }
-                catch (FormatException fe)
-                {
-                    Console.WriteLine("Error decoding Base64 data: " + fe.Message);
-                    return;
-                }
+                // // Step 1: Decode Base64 to byte array
+                // byte[] videoData;
+                // try
+                // {
+                //     videoData = Convert.FromBase64String(base64Data);
+                // }
+                // catch (FormatException fe)
+                // {
+                //     Console.WriteLine("Error decoding Base64 data: " + fe.Message);
+                //     return;
+                // }
+                //
+                Console.WriteLine($"Received video data chunk of length: {base64Data.Length} bytes");
+                //
+                // // Step 2: Check if the video data is valid
+                // if (videoData.Length == 0)
+                // {
+                //     Console.WriteLine("Error: Decoded video data is empty");
+                //     return;
+                // }
 
-                Console.WriteLine($"Received video data chunk of length: {videoData.Length} bytes");
-
-                // Step 2: Check if the video data is valid
-                if (videoData.Length == 0)
-                {
-                    Console.WriteLine("Error: Decoded video data is empty");
-                    return;
-                }
-
-                await videoStreamService.SendVideoDataAsync(videoData, sourceId, cameraId);
+                await videoStreamService.SendVideoDataAsync(base64Data, sourceId, cameraId, timestamp);
             }
             catch (Exception ex)
             {
