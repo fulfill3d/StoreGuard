@@ -59,7 +59,7 @@ namespace StoreGuard.Microservices.VideoStream
             }
         }
 
-        public async Task SendVideoData(string base64Data)
+        public async Task SendVideoData(string base64Data, string sourceId, string cameraId)
         {
             try
             {
@@ -90,7 +90,7 @@ namespace StoreGuard.Microservices.VideoStream
                     return;
                 }
 
-                await videoStreamService.SendVideoDataAsync(videoData);
+                await videoStreamService.SendVideoDataAsync(videoData, sourceId, cameraId);
             }
             catch (Exception ex)
             {

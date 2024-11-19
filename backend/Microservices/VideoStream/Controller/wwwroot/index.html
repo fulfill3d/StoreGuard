@@ -15,6 +15,10 @@
         .configureLogging(signalR.LogLevel.Information)
         .build();
 
+    // Define businessId and cameraId
+    const sourceId = "source-123"; // Replace with dynamic business ID if needed
+    const cameraId = "camera-001"; // Replace with dynamic camera ID if needed
+
     // Function to check for supported MIME types
     function getSupportedMimeType() {
         const mimeTypes = [
@@ -59,7 +63,7 @@
 
                 try {
                     console.log(`Sending chunk of size: ${chunk.length} bytes`);
-                    await hubConnection.invoke("SendVideoData", base64Chunk);
+                    await hubConnection.invoke("SendVideoData", base64Chunk, sourceId, cameraId);
                 } catch (err) {
                     console.error("Error sending video chunk:", err.message);
                     return;
@@ -82,7 +86,6 @@
                 await sendChunkedData(videoChunk);
             }
         };
-
 
         mediaRecorder.start(200);
 

@@ -1,3 +1,5 @@
+import io
+import base64
 import os
 import cv2
 import datetime
@@ -27,6 +29,8 @@ class VideoProcessingService:
         self.service_bus_client = service_bus_client
         self.event_hub_client = event_hub_client
         self.queue_name = queue_name
+        self.source_id = None
+        self.camera_id = None
         self.active_tracks = {}
 
     def process_frame(self, frame):
@@ -73,6 +77,8 @@ class VideoProcessingService:
                     "uuid": track_id,
                     "start_time": start_time,
                     "end_time": end_time,
+                    "source_id": self.source_id,
+                    "camera_id": self.camera_id,
                     "action": "disappeared"
                 })
                 self.service_bus_client.send_message_to_queue(self.queue_name, message_content, track_id)
@@ -105,10 +111,34 @@ class VideoProcessingService:
     def run_event_hub_listener(self):
         """Listen for video frames from Azure Event Hub."""
         def process_event(partition_context, event):
-            frame = event.body_as_bytes()
-            np_frame = cv2.imdecode(np.frombuffer(frame, np.uint8), cv2.IMREAD_COLOR)
-            if np_frame is not None:
-                self.process_frame(np_frame)
+            logging.info(f"Received event: {event.body_as_str()}")
+            payload = json.loads(event.body_as_str())
+            self.source_id = payload["SourceId"]
+            self.camera_id = payload["CameraId"]
+            frame_data = payload["FrameData"]
+
+            # Decode Base64 video chunk
+            video_chunk = base64.b64decode(frame_data)
+
+            # Use OpenCV VideoCapture to decode video chunks into frames
+            video_stream = cv2.VideoCapture(io.BytesIO(video_chunk))
+            while video_stream.isOpened():
+                ret, frame = video_stream.read()
+                if not ret:
+                    break  # No more frames in the chunk
+                self.process_frame(frame)  # Process each decoded frame
+
+            video_stream.release()
+            # frame_bytes = base64.b64decode(frame_data)
+            #
+            # # Save frame bytes for debugging
+            # with open("debug_frame.webm", "wb") as f:
+            #     f.write(frame_bytes)
+            #
+            # np_frame = cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR)
+            # if np_frame is not None:
+            #     logging.info(f"NumPy Frame is not None")
+            #     self.process_frame(np_frame)
             partition_context.update_checkpoint()
 
         if self.event_hub_client:

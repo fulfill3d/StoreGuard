@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\Integrations\EventHubClient\StoreGuard.Integrations.EventHubClient.csproj" />
+      <ProjectReference Include="..\Data\StoreGuard.Microservices.VideoStream.Data.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using StoreGuard.Microservices.VideoStream.Data.Models;
 
 namespace StoreGuard.Microservices.VideoStream
 {
@@ -27,12 +28,6 @@ namespace StoreGuard.Microservices.VideoStream
             await hubContext.Clients.All.SendAsync("ReceiveCandidate", message.Data);
             return Ok();
         }
-    }
-
-    public class SignalingMessage
-    {
-        public string ConnectionId { get; set; }
-        public string Data { get; set; }
     }
 }
 
