@@ -1,98 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>WebRTC Video Streaming</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Frame Streaming</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.0/signalr.min.js"></script>
 </head>
 <body>
-<h2>WebRTC Video Streaming</h2>
+<h2>WebRTC Frame Streaming</h2>
 <video id="localVideo" autoplay playsinline></video>
 <script>
     const videoElement = document.getElementById("localVideo");
-    const peerConnection = new RTCPeerConnection();
     const hubConnection = new signalR.HubConnectionBuilder()
         .withUrl("http://localhost:5026/videoHub", { withCredentials: true })
         .configureLogging(signalR.LogLevel.Information)
         .build();
 
-    // Define businessId and cameraId
-    const sourceId = "source-123"; // Replace with dynamic business ID if needed
+    // Define source and camera identifiers
+    const sourceId = "source-123"; // Replace with dynamic source ID if needed
     const cameraId = "camera-001"; // Replace with dynamic camera ID if needed
+    const timestamp = new Date().toISOString();
 
-    // Function to check for supported MIME types
-    function getSupportedMimeType() {
-        const mimeTypes = [
-            'video/webm; codecs="vp8"',
-            'video/webm; codecs="vp9"',
-            'video/webm; codecs="h264"',
-            'video/mp4'
-        ];
+    // Function to capture and send frames at a low rate
+    async function captureAndSendFrames(stream, frameRate = 1) {
+        // Create a canvas to extract frames from the video
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = videoElement.videoWidth || 640; // Default width
+        canvas.height = videoElement.videoHeight || 480; // Default height
 
-        for (const mimeType of mimeTypes) {
-            if (MediaRecorder.isTypeSupported(mimeType)) {
-                console.log(`Using MIME type: ${mimeType}`);
-                return mimeType;
+        // Adjust the frame interval based on the desired frame rate
+        const frameInterval = 1000 / frameRate;
+
+        // Capture frames at the specified rate
+        setInterval(() => {
+            try {
+                // Ensure the canvas dimensions match the video dimensions dynamically
+                canvas.width = videoElement.videoWidth;
+                canvas.height = videoElement.videoHeight;
+                
+                // Draw the current frame from the video onto the canvas
+                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+                // Convert the canvas content to a Base64-encoded JPEG image
+                const fullBase64 = canvas.toDataURL('image/jpeg');
+                const frameData = fullBase64.split(',')[1]; // Extract Base64 data
+
+                // Send the frame data to the backend using SignalR
+                hubConnection.invoke("SendVideoData", frameData, sourceId, cameraId, timestamp)
+                    .then(() => console.log("Frame sent successfully"))
+                    .catch(err => console.error("Error sending frame:", err));
+            } catch (error) {
+                console.error("Error capturing and sending frame:", error);
             }
-        }
-
-        console.error("No supported MIME type found");
-        return null;
+        }, frameInterval);
     }
 
     async function startVideo() {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        videoElement.srcObject = stream;
+        try {
+            // Get the video stream from the user's camera
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            videoElement.srcObject = stream;
 
-        // Get a supported MIME type
-        const selectedMimeType = getSupportedMimeType();
-        if (!selectedMimeType) {
-            console.error("Failed to start MediaRecorder: No supported MIME type");
-            return;
+            // Ensure the video starts playing
+            await videoElement.play();
+
+            // Start capturing and sending frames
+            await captureAndSendFrames(stream);
+        } catch (error) {
+            console.error("Error accessing camera:", error);
         }
-
-        // Create MediaRecorder with the selected MIME type
-        const mediaRecorder = new MediaRecorder(stream, { mimeType: selectedMimeType });
-
-        // Function to send data in smaller chunks
-        async function sendChunkedData(data, chunkSize = 64 * 1024) { // 64KB chunks
-            let offset = 0;
-
-            while (offset < data.length) {
-                const chunk = data.slice(offset, offset + chunkSize);
-                const base64Chunk = btoa(String.fromCharCode(...chunk));
-
-                try {
-                    console.log(`Sending chunk of size: ${chunk.length} bytes`);
-                    await hubConnection.invoke("SendVideoData", base64Chunk, sourceId, cameraId);
-                } catch (err) {
-                    console.error("Error sending video chunk:", err.message);
-                    return;
-                }
-
-                offset += chunkSize;
-            }
-        }
-
-        mediaRecorder.ondataavailable = async (event) => {
-            console.log("ondataavailable event fired");
-            if (event.data && event.data.size > 0) {
-                const arrayBuffer = await event.data.arrayBuffer();
-                console.log(`Captured video chunk of size: ${arrayBuffer.byteLength}`);
-
-                // Convert to Uint8Array
-                const videoChunk = new Uint8Array(arrayBuffer);
-
-                // Send the data in smaller chunks
-                await sendChunkedData(videoChunk);
-            }
-        };
-
-        mediaRecorder.start(200);
-
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
-        await sendOffer(offer.sdp);
     }
+
 
     async function connectSignalR() {
         try {
@@ -104,51 +83,8 @@
         }
     }
 
-    async function sendOffer(offer) {
-        try {
-            console.log("Sending offer...");
-            await hubConnection.invoke("SendOffer", offer);
-        } catch (err) {
-            console.error("Error sending offer:", err);
-        }
-    }
-
-    async function handleWebRTC() {
-        peerConnection.ontrack = (event) => {
-            videoElement.srcObject = event.streams[0];
-        };
-
-        hubConnection.on("ReceiveOffer", async (offer) => {
-            console.log("Received offer from server");
-            const remoteDesc = new RTCSessionDescription({ type: "offer", sdp: offer });
-            await peerConnection.setRemoteDescription(remoteDesc);
-
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            await hubConnection.invoke("SendAnswer", answer.sdp);
-        });
-
-        hubConnection.on("ReceiveAnswer", async (answer) => {
-            console.log("Received answer from server");
-            const remoteDesc = new RTCSessionDescription({ type: "answer", sdp: answer });
-            await peerConnection.setRemoteDescription(remoteDesc);
-        });
-
-        peerConnection.onicecandidate = (event) => {
-            if (event.candidate) {
-                hubConnection.invoke("SendIceCandidate", event.candidate.candidate)
-                    .catch(err => console.error("Error sending ICE candidate:", err));
-            }
-        };
-
-        hubConnection.on("ReceiveCandidate", async (candidate) => {
-            console.log("Received ICE candidate from server");
-            await peerConnection.addIceCandidate(new RTCIceCandidate({ candidate }));
-        });
-    }
-
+    // Initialize SignalR connection and start the video stream
     connectSignalR();
-    handleWebRTC();
     startVideo();
 </script>
 </body>
