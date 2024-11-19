@@ -57,6 +57,7 @@ class VideoProcessingService:
         """Handle active and disappeared tracks."""
         current_time = datetime.datetime.now(datetime.UTC).isoformat()
 
+        logging.info(f"Handling tracks")
         for track in tracks:
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
@@ -117,28 +118,16 @@ class VideoProcessingService:
             self.camera_id = payload["CameraId"]
             frame_data = payload["FrameData"]
 
-            # Decode Base64 video chunk
-            video_chunk = base64.b64decode(frame_data)
+            frame_bytes = base64.b64decode(frame_data)
 
-            # Use OpenCV VideoCapture to decode video chunks into frames
-            video_stream = cv2.VideoCapture(io.BytesIO(video_chunk))
-            while video_stream.isOpened():
-                ret, frame = video_stream.read()
-                if not ret:
-                    break  # No more frames in the chunk
-                self.process_frame(frame)  # Process each decoded frame
-
-            video_stream.release()
-            # frame_bytes = base64.b64decode(frame_data)
-            #
-            # # Save frame bytes for debugging
-            # with open("debug_frame.webm", "wb") as f:
+            # Save frame bytes for debugging
+            # with open("debug_frame.jpg", "wb") as f:
             #     f.write(frame_bytes)
-            #
-            # np_frame = cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR)
-            # if np_frame is not None:
-            #     logging.info(f"NumPy Frame is not None")
-            #     self.process_frame(np_frame)
+
+            np_frame = cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR)
+            if np_frame is not None:
+                logging.info(f"NumPy Frame is not None")
+                self.process_frame(np_frame)
             partition_context.update_checkpoint()
 
         if self.event_hub_client:
