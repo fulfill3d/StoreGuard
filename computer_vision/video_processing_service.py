@@ -1,4 +1,3 @@
-import io
 import base64
 import os
 import cv2
@@ -56,34 +55,46 @@ class VideoProcessingService:
     def handle_tracks(self, tracks):
         """Handle active and disappeared tracks."""
         current_time = datetime.datetime.now(datetime.UTC).isoformat()
-
         logging.info(f"Handling tracks")
+        logging.info(f"Tracks: {tracks}")
+
+        # Keep track of currently visible track IDs
+        active_track_ids = set()
+
         for track in tracks:
             if not track.is_confirmed() or track.time_since_update > 1:
                 continue
 
             track_id = str(track.track_id)
+            active_track_ids.add(track_id)
 
             if track_id not in self.active_tracks:
-                self.active_tracks[track_id] = {"start_time": current_time}
+                # New track appeared
+                self.active_tracks[track_id] = {"start_time": current_time, "last_seen": current_time}
                 logging.info(f"Person {track_id} appeared at {current_time}")
             else:
+                # Update last seen time for active track
                 self.active_tracks[track_id]["last_seen"] = current_time
 
-        for track_id, info in list(self.active_tracks.items()):
-            if track_id not in [str(track.track_id) for track in tracks]:
-                end_time = current_time
-                start_time = info.get("start_time")
+        # Check for disappeared tracks
+        for track_id in list(self.active_tracks.keys()):
+            if track_id not in active_track_ids:
+                # Track has disappeared
+                start_time = self.active_tracks[track_id]["start_time"]
+                end_time = self.active_tracks[track_id]["last_seen"]
+
+                # Prepare and send disappearance message
                 message_content = json.dumps({
                     "uuid": track_id,
                     "start_time": start_time,
                     "end_time": end_time,
                     "source_id": self.source_id,
-                    "camera_id": self.camera_id,
-                    "action": "disappeared"
+                    "camera_id": self.camera_id
                 })
                 self.service_bus_client.send_message_to_queue(self.queue_name, message_content, track_id)
                 logging.info(f"Person {track_id} disappeared at {end_time}")
+
+                # Remove the disappeared track
                 del self.active_tracks[track_id]
 
     def run_video_stream(self, url):
@@ -119,10 +130,6 @@ class VideoProcessingService:
             frame_data = payload["FrameData"]
 
             frame_bytes = base64.b64decode(frame_data)
-
-            # Save frame bytes for debugging
-            # with open("debug_frame.jpg", "wb") as f:
-            #     f.write(frame_bytes)
 
             np_frame = cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR)
             if np_frame is not None:
