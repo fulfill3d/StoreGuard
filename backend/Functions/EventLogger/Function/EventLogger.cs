@@ -1,3 +1,4 @@
+using System.Text;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
@@ -7,35 +8,21 @@ using StoreGuard.Functions.EventLogger.Service.Interface;
 
 namespace StoreGuard.Functions.EventLogger
 {
-    public class EventLogger(IEventLogService eventLogService)
+    public class EventLogger(IEventLogService eventLogService, ILogger<EventLogger> logger)
     {
         
-        [Function("service-bus-event-logger")]
-        public async Task Run(
-            [ServiceBusTrigger("service-bus-event-logger", Connection = "ServiceBusConnectionString")] EventLog message,
-            ILogger log)
+        [Function("sg-video-service")]
+        public async Task Run([ServiceBusTrigger("sg-video-service", Connection = "ServiceBusConnectionString", IsSessionsEnabled = true)]  ServiceBusReceivedMessage msg)
         {
-            log.LogInformation("Service Bus Event Logger processing started.");
-            
-            // Log the message content
-            log.LogInformation(JsonConvert.SerializeObject(message));
+            var message = JsonConvert.DeserializeObject<EventLog>(Encoding.UTF8.GetString(msg.Body));
 
-            try
+            if (message != null)
             {
-                // Write the event to Cosmos DB
-                await eventLogService.AddEventLogAsync(new EventLog
-                {
-                    EventType = message.EventType,
-                    Payload = message.Payload,
-                    Timestamp = message.Timestamp
-                });
-
-                log.LogInformation("Event logged successfully.");
+                await eventLogService.AddEventLogAsync(message);
             }
-            catch (Exception ex)
+            else
             {
-                log.LogError($"Error processing event log: {ex.Message}");
-                throw;
+                logger.LogError("EventLogger: Failed to deserialize message");
             }
         }
     }

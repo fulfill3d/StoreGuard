@@ -9,7 +9,7 @@ namespace StoreGuard.Functions.EventLogger.Service
 
         public async Task AddEventLogAsync(EventLog eventLog)
         {
-            await cosmosDbClient.AddItemAsync(eventLog, eventLog.EventType);
+            await cosmosDbClient.AddItemAsync(eventLog, eventLog.SourceId);
         }
     }
 }
