@@ -6,7 +6,7 @@ from ultralytics import YOLO
 
 from azure_event_hub_client import AzureEventHubClient
 from azure_service_bus_client import AzureServiceBusClient
-from configuration import AppConfigClient
+from azure_app_config_client import AppConfigClient
 from video_processing_service import VideoProcessingService
 
 from dotenv import load_dotenv

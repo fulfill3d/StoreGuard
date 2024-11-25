@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from deep_sort_realtime.deepsort_tracker import DeepSort
 from ultralytics import YOLO
 
-from configuration import AppConfigClient
+from azure_app_config_client import AppConfigClient
 from azure_service_bus_client import AzureServiceBusClient
 
 # Load environment variables

@@ -3,7 +3,7 @@ import os
 
 from azure.servicebus import ServiceBusClient, ServiceBusMessage
 
-from configuration import AppConfigClient
+from azure_app_config_client import AppConfigClient
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
