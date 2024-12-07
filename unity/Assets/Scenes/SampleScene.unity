@@ -936,6 +936,7 @@ GameObject:
   - component: {fileID: 829480274}
   - component: {fileID: 829480273}
   - component: {fileID: 829480272}
+  - component: {fileID: 829480275}
   m_Layer: 0
   m_Name: cam8
   m_TagString: cam8
@@ -1017,6 +1018,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 35, y: 270, z: 0}
+--- !u!114 &829480275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 829480271}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7252fee1c9aa4aa499b4faa4931d4861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetFrameRate: 2
+  savePath: CapturedFrames
+  frameWidth: 320
+  frameHeight: 180
 --- !u!1 &834076893
 GameObject:
   m_ObjectHideFlags: 0
@@ -1390,6 +1407,7 @@ GameObject:
   - component: {fileID: 1013494796}
   - component: {fileID: 1013494795}
   - component: {fileID: 1013494794}
+  - component: {fileID: 1013494797}
   m_Layer: 0
   m_Name: cam3
   m_TagString: cam3
@@ -1471,6 +1489,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 35, y: 140, z: 0}
+--- !u!114 &1013494797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1013494793}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7252fee1c9aa4aa499b4faa4931d4861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetFrameRate: 2
+  savePath: CapturedFrames
+  frameWidth: 320
+  frameHeight: 180
 --- !u!1 &1128717457
 GameObject:
   m_ObjectHideFlags: 0
@@ -1592,6 +1626,7 @@ GameObject:
   - component: {fileID: 1170272229}
   - component: {fileID: 1170272228}
   - component: {fileID: 1170272227}
+  - component: {fileID: 1170272230}
   m_Layer: 0
   m_Name: cam6
   m_TagString: cam6
@@ -1673,6 +1708,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 35, y: 270, z: 0}
+--- !u!114 &1170272230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1170272226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7252fee1c9aa4aa499b4faa4931d4861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetFrameRate: 2
+  savePath: CapturedFrames
+  frameWidth: 320
+  frameHeight: 180
 --- !u!1 &1235806023
 GameObject:
   m_ObjectHideFlags: 0
@@ -2033,6 +2084,7 @@ GameObject:
   - component: {fileID: 1468501036}
   - component: {fileID: 1468501035}
   - component: {fileID: 1468501034}
+  - component: {fileID: 1468501037}
   m_Layer: 0
   m_Name: cam7
   m_TagString: cam7
@@ -2114,6 +2166,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 35, y: 270, z: 0}
+--- !u!114 &1468501037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1468501033}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7252fee1c9aa4aa499b4faa4931d4861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetFrameRate: 2
+  savePath: CapturedFrames
+  frameWidth: 320
+  frameHeight: 180
 --- !u!1 &1474661400
 GameObject:
   m_ObjectHideFlags: 0
@@ -2125,6 +2193,7 @@ GameObject:
   - component: {fileID: 1474661403}
   - component: {fileID: 1474661402}
   - component: {fileID: 1474661401}
+  - component: {fileID: 1474661404}
   m_Layer: 0
   m_Name: cam4
   m_TagString: cam4
@@ -2206,6 +2275,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 35, y: 225, z: 0}
+--- !u!114 &1474661404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1474661400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7252fee1c9aa4aa499b4faa4931d4861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetFrameRate: 2
+  savePath: CapturedFrames
+  frameWidth: 320
+  frameHeight: 180
 --- !u!1 &1484607145
 GameObject:
   m_ObjectHideFlags: 0
@@ -2325,6 +2410,7 @@ GameObject:
   - component: {fileID: 1623769070}
   - component: {fileID: 1623769069}
   - component: {fileID: 1623769068}
+  - component: {fileID: 1623769071}
   m_Layer: 0
   m_Name: cam5
   m_TagString: cam5
@@ -2406,6 +2492,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 35, y: 270, z: 0}
+--- !u!114 &1623769071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1623769067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7252fee1c9aa4aa499b4faa4931d4861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetFrameRate: 2
+  savePath: CapturedFrames
+  frameWidth: 320
+  frameHeight: 180
 --- !u!1 &1631760338
 GameObject:
   m_ObjectHideFlags: 0
@@ -3043,6 +3145,7 @@ GameObject:
   - component: {fileID: 2087604030}
   - component: {fileID: 2087604029}
   - component: {fileID: 2087604028}
+  - component: {fileID: 2087604031}
   m_Layer: 0
   m_Name: cam1
   m_TagString: cam1
@@ -3124,6 +3227,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 35, y: -50, z: 0}
+--- !u!114 &2087604031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2087604027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7252fee1c9aa4aa499b4faa4931d4861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetFrameRate: 2
+  savePath: CapturedFrames
+  frameWidth: 320
+  frameHeight: 180
 --- !u!1 &2138646782
 GameObject:
   m_ObjectHideFlags: 0
@@ -3135,6 +3254,7 @@ GameObject:
   - component: {fileID: 2138646785}
   - component: {fileID: 2138646784}
   - component: {fileID: 2138646783}
+  - component: {fileID: 2138646786}
   m_Layer: 0
   m_Name: cam2
   m_TagString: cam2
@@ -3216,6 +3336,22 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 35, y: 50, z: 0}
+--- !u!114 &2138646786
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2138646782}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7252fee1c9aa4aa499b4faa4931d4861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetFrameRate: 2
+  savePath: CapturedFrames
+  frameWidth: 320
+  frameHeight: 180
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

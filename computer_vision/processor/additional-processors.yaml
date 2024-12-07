@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor-cam3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: processor-cam3
+  template:
+    metadata:
+      labels:
+        app: processor-cam3
+    spec:
+      containers:
+        - name: processor
+          image: processor-image:latest
+          args: ["cam3"]
+          env:
+            - name: EVENTHUB_CONNECTION_STR
+              valueFrom:
+                secretKeyRef:
+                  name: eventhub-secret
+                  key: EVENTHUB_CONNECTION_STR
+            - name: ORCHESTRATOR_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: processor-config
+                  key: ORCHESTRATOR_URL

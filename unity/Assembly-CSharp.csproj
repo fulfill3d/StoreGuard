@@ -51,6 +51,7 @@
     <Compile Include="Assets/Node.cs" />
     <Compile Include="Assets/ShelfPathRoaming.cs" />
     <Compile Include="Assets/TutorialInfo/Scripts/Readme.cs" />
+    <Compile Include="Assets/CameraFrameCapture.cs" />
     <Compile Include="Assets/StoreSetup.cs" />
     <Reference Include="UnityEngine">
       <HintPath>/Users/Shared/Unity/6000.0.25f1/Unity.app/Contents/Managed/UnityEngine/UnityEngine.dll</HintPath>

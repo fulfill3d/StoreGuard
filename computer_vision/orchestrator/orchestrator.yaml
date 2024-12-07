@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orchestrator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orchestrator
+  template:
+    metadata:
+      labels:
+        app: orchestrator
+    spec:
+      containers:
+        - name: orchestrator
+          image: orchestrator-image:latest
+          env:
+            - name: SERVICEBUS_CONNECTION_STR
+              valueFrom:
+                secretKeyRef:
+                  name: servicebus-secret
+                  key: SERVICEBUS_CONNECTION_STR
+            - name: QUEUE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: orchestrator-config
+                  key: QUEUE_NAME
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orchestrator-service
+spec:
+  selector:
+    app: orchestrator
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP

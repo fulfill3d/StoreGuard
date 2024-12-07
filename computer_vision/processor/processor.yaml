@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor-cam1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: processor-cam1
+  template:
+    metadata:
+      labels:
+        app: processor-cam1
+    spec:
+      containers:
+        - name: processor
+          image: processor-image:latest
+          args: ["cam1"]
+          env:
+            - name: EVENTHUB_CONNECTION_STR
+              valueFrom:
+                secretKeyRef:
+                  name: eventhub-secret
+                  key: EVENTHUB_CONNECTION_STR
+            - name: ORCHESTRATOR_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: processor-config
+                  key: ORCHESTRATOR_URL
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor-cam2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: processor-cam2
+  template:
+    metadata:
+      labels:
+        app: processor-cam2
+    spec:
+      containers:
+        - name: processor
+          image: processor-image:latest
+          args: ["cam2"]
+          env:
+            - name: EVENTHUB_CONNECTION_STR
+              valueFrom:
+                secretKeyRef:
+                  name: eventhub-secret
+                  key: EVENTHUB_CONNECTION_STR
+            - name: ORCHESTRATOR_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: processor-config
+                  key: ORCHESTRATOR_URL

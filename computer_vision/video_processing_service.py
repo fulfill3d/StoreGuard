@@ -1,5 +1,8 @@
 import base64
+import glob
 import os
+import threading
+
 import cv2
 import datetime
 import logging
@@ -12,6 +15,7 @@ from ultralytics import YOLO
 
 from azure_app_config_client import AppConfigClient
 from azure_service_bus_client import AzureServiceBusClient
+from global_tracker import GlobalTracker
 
 # Load environment variables
 load_dotenv()
@@ -22,11 +26,12 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 class VideoProcessingService:
     """Class to process video stream or Event Hub frames for human detection and send messages."""
-    def __init__(self, model, tracker, event_hub_client, service_bus_client, queue_name):
+    def __init__(self, model, tracker, global_tracker, service_bus_client, queue_name):
+        self.event_hub_client = None
         self.model = model
         self.tracker = tracker
+        self.global_tracker = global_tracker
         self.service_bus_client = service_bus_client
-        self.event_hub_client = event_hub_client
         self.queue_name = queue_name
         self.source_id = None
         self.camera_id = None
@@ -50,7 +55,19 @@ class VideoProcessingService:
                 detections.append(((x1, y1, width, height), conf.item(), "person"))
 
         tracks = self.tracker.update_tracks(detections, frame=frame)
-        self.handle_tracks(tracks)
+
+        # Match tracks to global tracker
+        for track in tracks:
+            if not track.is_confirmed() or track.time_since_update > 1:
+                continue
+
+            self.global_tracker.match_and_update(
+                self.source_id,
+                self.camera_id,
+                track.features
+            )
+
+        # self.handle_tracks(tracks)
 
     def handle_tracks(self, tracks):
         """Handle active and disappeared tracks."""
@@ -140,35 +157,118 @@ class VideoProcessingService:
         if self.event_hub_client:
             self.event_hub_client.receive_events(process_event)
 
+    def run_capture_frame(self, frame_directory, camera_name):
+        """
+        Simulate video processing by reading frames stored as .png files in a directory.
+
+        :param frame_directory: Directory where frame files are stored.
+        :param camera_name: Name of the camera to filter the frames.
+        """
+        self.camera_id = camera_name
+        frame_pattern = os.path.join(frame_directory, f"camera_{camera_name}_frame_*.png")
+        frame_files = sorted(glob.glob(frame_pattern))  # Sorted to ensure sequential processing
+
+        if not frame_files:
+            logging.error(f"No frames found for camera {camera_name} in directory {frame_directory}.")
+            return
+
+        logging.info(f"Starting frame processing for camera {camera_name}. Total frames: {len(frame_files)}")
+
+        for frame_file in frame_files:
+            try:
+                # Load the frame
+                frame = cv2.imread(frame_file)
+
+                if frame is None:
+                    logging.warning(f"Could not read frame {frame_file}. Skipping.")
+                    continue
+
+                # Process the frame
+                self.process_frame(frame)
+
+                # Show the frame for debugging or monitoring purposes
+                cv2.imshow("Frame Processing", frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+
+            except Exception as e:
+                logging.error(f"Error processing frame {frame_file}: {e}")
+                continue
+
+        logging.info("Completed frame processing.")
+        cv2.destroyAllWindows()
+
+
+# if __name__ == "__main__":
+#     # Fetch configuration settings from Azure App Configuration
+#     config_client = AppConfigClient(os.getenv('APP_CONFIG_URL'))
+#     service_bus_connection_str = config_client.fetch_configuration_value("ServiceBusConnectionString")
+#     queue = config_client.fetch_configuration_value("SG_QueueName")
+#
+#     if not all([service_bus_connection_str, queue]):
+#         logging.error("Missing configuration values for Service Bus. Exiting.")
+#         exit(1)
+#
+#     # Initialize Azure Service Bus Client
+#     sb_client = AzureServiceBusClient(service_bus_connection_str)
+#
+#     try:
+#         # Initialize YOLO model
+#         yolo = YOLO("yolov8n.pt")
+#         deep_sort = DeepSort(max_age=30)
+#
+#         # Fetch configuration settings from Azure App Configuration
+#         video_stream_url = os.getenv("VIDEO_STREAM_URL")
+#
+#         # Create the Video Processing Service instance
+#         video_service = VideoProcessingService(yolo, deep_sort, None, sb_client, queue)
+#
+#         # Run the video stream from the specified URL
+#         video_service.run_video_stream(video_stream_url)
+#
+#     except Exception as e:
+#         logging.error(f"Service encountered an error: {e}")
+#     finally:
+#         sb_client.close()
+
+
+def start_camera_stream(camera_name, global_tracker, model, service_bus_client, queue_name):
+    tracker = DeepSort(max_age=30)
+    service = VideoProcessingService(model, tracker, global_tracker, service_bus_client, queue_name)
+    service.run_capture_frame("/Users/abdurrahmangaziyavuz/StoreGuardAI/unity/CapturedFrames/", camera_name)
+
 
 if __name__ == "__main__":
-    # Fetch configuration settings from Azure App Configuration
     config_client = AppConfigClient(os.getenv('APP_CONFIG_URL'))
     service_bus_connection_str = config_client.fetch_configuration_value("ServiceBusConnectionString")
     queue = config_client.fetch_configuration_value("SG_QueueName")
 
-    if not all([service_bus_connection_str, queue]):
-        logging.error("Missing configuration values for Service Bus. Exiting.")
-        exit(1)
-
     # Initialize Azure Service Bus Client
     sb_client = AzureServiceBusClient(service_bus_connection_str)
+    yolo = YOLO("yolov8n.pt")
+    global_tracker = GlobalTracker()
 
     try:
-        # Initialize YOLO model
-        yolo = YOLO("yolov8n.pt")
-        deep_sort = DeepSort(max_age=30)
 
-        # Fetch configuration settings from Azure App Configuration
-        video_stream_url = os.getenv("VIDEO_STREAM_URL")
+        # List of camera URLs
+        camera_sources = ["cam1", "cam2", "cam3", "cam4", "cam5", "cam6", "cam7", "cam8"]
 
-        # Create the Video Processing Service instance
-        video_service = VideoProcessingService(yolo, deep_sort, None, sb_client, queue)
+        # Start a thread for each camera
+        threads = []
+        for camera_name in camera_sources:
+            t = threading.Thread(
+                target=start_camera_stream,
+                args=(camera_name, global_tracker, yolo, sb_client, queue)
+            )
+            threads.append(t)
+            t.start()
 
-        # Run the video stream from the specified URL
-        video_service.run_video_stream(video_stream_url)
+        # Wait for all threads to complete
+        for t in threads:
+            t.join()
 
     except Exception as e:
         logging.error(f"Service encountered an error: {e}")
     finally:
         sb_client.close()
+        print(global_tracker.global_tracks)
