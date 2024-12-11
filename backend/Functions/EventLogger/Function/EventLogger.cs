@@ -12,7 +12,7 @@ namespace StoreGuard.Functions.EventLogger
     {
         
         [Function("sg-video-service")]
-        public async Task Run([ServiceBusTrigger("sg-video-service", Connection = "ServiceBusConnectionString", IsSessionsEnabled = true)]  ServiceBusReceivedMessage msg)
+        public async Task Run([ServiceBusTrigger("sg-video-service", Connection = "ServiceBusConnectionString", IsSessionsEnabled = false)]  ServiceBusReceivedMessage msg)
         {
             var message = JsonConvert.DeserializeObject<EventLog>(Encoding.UTF8.GetString(msg.Body));
 
