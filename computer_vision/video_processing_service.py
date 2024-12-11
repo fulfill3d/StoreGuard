@@ -2,6 +2,7 @@ import base64
 import glob
 import os
 import threading
+from pyexpat import features
 
 import cv2
 import datetime
@@ -64,7 +65,7 @@ class VideoProcessingService:
             self.global_tracker.match_and_update(
                 self.source_id,
                 self.camera_id,
-                track.features
+                np.array(track.features)
             )
 
         # self.handle_tracks(tracks)
@@ -108,7 +109,7 @@ class VideoProcessingService:
                     "source_id": self.source_id,
                     "camera_id": self.camera_id
                 })
-                self.service_bus_client.send_message_to_queue(self.queue_name, message_content, track_id)
+                self.service_bus_client.send_message_to_queue(self.queue_name, message_content)
                 logging.info(f"Person {track_id} disappeared at {end_time}")
 
                 # Remove the disappeared track
@@ -251,7 +252,11 @@ if __name__ == "__main__":
     try:
 
         # List of camera URLs
-        camera_sources = ["cam1", "cam2", "cam3", "cam4", "cam5", "cam6", "cam7", "cam8"]
+        # camera_sources = ["cam1", "cam2", "cam3", "cam4", "cam5", "cam6", "cam7", "cam8"]
+        camera_sources = ["cam1", "cam2"]
+        # tracker = DeepSort(max_age=30)
+        # service = VideoProcessingService(yolo, tracker, global_tracker, sb_client, queue)
+        # service.run_capture_frame("/Users/abdurrahmangaziyavuz/StoreGuardAI/unity/CapturedFrames/", camera_sources[0])
 
         # Start a thread for each camera
         threads = []

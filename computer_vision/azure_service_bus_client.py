@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     # Example usage: Sending a message to a queue
     queue = "sg-video-service"
-    service_bus_client.send_message_to_queue(queue, "Hello, Queue!", "test-session")
+    service_bus_client.send_message_to_queue(queue, "Hello, Queue!", None)
 
     # Example usage: Sending a message to a topic
     # topic = "my-topic"
